@@ -1,0 +1,9 @@
+PySide6
+Shionna
+Matplotlib
+PyQt6
+tensorflow
+math
+redsolo
+numpy
+scipy
