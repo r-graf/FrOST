@@ -1,10 +1,10 @@
 # Free Space Optical Simulation Tool (FROST) 
 
-**Version:** 0.1.0  
+**Version:** 0.1.1  
 **Status:** Development (alpha)  
 **Autor:** Robin Graf  
 **Lizenz:** --  
-**Letztes Update:** Oktober 2025  
+**Letztes Update:** February 2026  
 
 *(ehemals: optical-satcom-sim)*
 

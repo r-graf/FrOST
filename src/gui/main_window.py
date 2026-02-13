@@ -1,70 +1,123 @@
 # src/gui/main_window.py
-from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QLabel,
-                               QComboBox, QPushButton, QStackedWidget, QMessageBox)
-from gui.input_widgets import EbN0InputWidget ,PowerInputWidget, DistanceInputWidget
-# Später importieren wir hier deine Logik:
-# from core.osc_sim import run_simulation 
+import sys
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
+                               QPushButton, QStackedWidget, QMessageBox)
+
+# Importiere deine Seiten (wir erstellen die Dateien gleich)
+from gui.pages.p0_start import StartPage
+from gui.pages.p1_mode import ModePage
+from gui.pages.p2_geometric import GeometricPage
+from gui.pages.p3_atmos import AtmospherePage
+from gui.pages.p4_scinti import ScintillationPage
+from gui.pages.p5_background import BackgroundPage
+from gui.pages.p6_summary import SummaryPage
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("FROST - Free Space Optical Simulation Tool")
-        self.resize(500, 400)
+        self.resize(800,600)
 
-        # Zentrales Layout
+        # Zentrales Widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
+        main_layout = QVBoxLayout(central_widget)
 
-        # 1. Auswahl Dropdown
-        layout.addWidget(QLabel("<b>Auswahl der Berechnungsmethode für das Eb/N0:</b>"))
-
-        self.mode_selector = QComboBox()
-        self.mode_selector.setMaximumWidth(300)
-        self.mode_selector.addItems(["Berechnung über Eb/N0", "Berechnung über Leistung", "Berechnung über Distanz"])
-        self.mode_selector.currentIndexChanged.connect(self.switch_mask)
-        layout.addWidget(self.mode_selector)
-
-        # 2. Stacked Widget (Der Container für die Masken)
+        # --- 1. Seitencontainer ---
         self.stack = QStackedWidget()
         
-        self.mask_ebn0 = EbN0InputWidget()
-        self.mask_power = PowerInputWidget()
-        self.mask_distance = DistanceInputWidget()
-        
-        self.stack.addWidget(self.mask_ebn0)
-        self.stack.addWidget(self.mask_power)    # Index 0
-        self.stack.addWidget(self.mask_distance) # Index 1
-        
-        layout.addWidget(self.stack)
+        # Instanzen der Seiten
+        self.page_start = StartPage()
+        self.page_mode = ModePage()
+        self.page_geo = GeometricPage()
+        self.page_atmos = AtmospherePage()
+        self.page_scinti = ScintillationPage()
+        self.page_bckgrnd = BackgroundPage()
+        self.page_summary = SummaryPage()
 
-        # 3. Start Button
-        self.btn_start = QPushButton("Simulation starten")
-        self.btn_start.clicked.connect(self.start_simulation)
-        layout.addWidget(self.btn_start)
+        # Seiten zum Stack hinzufügen
+        self.stack.addWidget(self.page_start)   # Index 0
+        self.stack.addWidget(self.page_mode)    # Index 1
+        self.stack.addWidget(self.page_geo)     # Index 2
+        self.stack.addWidget(self.page_atmos)   # Index 3
+        self.stack.addWidget(self.page_scinti)  # Index 4
+        self.stack.addWidget(self.page_bckgrnd) # Index 5
+        self.stack.addWidget(self.page_summary) # Index 6
 
-    def switch_mask(self, index):
-        """Wechselt die angezeigte Maske im Stack basierend auf Dropdown"""
-        self.stack.setCurrentIndex(index)
+        main_layout.addWidget(self.stack)
+
+        # --- 2. Navigationsleiste ---
+        nav_layout = QHBoxLayout()
+        
+        self.btn_back = QPushButton("< Zurück")
+        self.btn_back.clicked.connect(self.go_back)
+        self.btn_back.setEnabled(False) # Am Anfang inaktiv
+        
+        self.btn_next = QPushButton("Weiter >")
+        self.btn_next.clicked.connect(self.go_next)
+        
+        nav_layout.addWidget(self.btn_back)
+        nav_layout.addStretch() # Schiebt Buttons auseinander (optional)
+        nav_layout.addWidget(self.btn_next)
+        
+        main_layout.addLayout(nav_layout)
+
+        # Dictionary um ALLE Daten der Simulation zu sammeln
+        self.simulation_data = {}        
+
+    def go_next(self):
+            """Geht eine Seite weiter und speichert Daten der aktuellen Seite"""
+            current_index = self.stack.currentIndex()
+            current_page = self.stack.currentWidget()
+
+            # 1. Daten der aktuellen Seite sichern (Validierung!)
+            if hasattr(current_page, "get_data"):
+                try:
+                    page_data = current_page.get_data()
+                    # Speichere die Daten im zentralen Dictionary unter dem Namen der Seite
+                    # oder flach, je nach Geschmack. Hier: Update ins Haupt-Dict.
+                    self.simulation_data.update(page_data)
+                    print(f"Aktuelle Daten: {self.simulation_data}") 
+                except ValueError as e:
+                    QMessageBox.warning(self, "Fehler", str(e))
+                    return # Nicht weitergehen bei Fehler!
+
+            # 2. Spezialfall: Sind wir auf der vorletzten Seite?
+            # Dann muss der Button vielleicht "Start" heißen oder wir füllen die Summary Page
+            if current_index + 1 == self.stack.count() - 1:
+                # Wir gehen jetzt zur Summary Page -> Daten übergeben!
+                self.page_summary.update_summary(self.simulation_data)
+                self.btn_next.setText("Simulation starten")
+            elif current_index == self.stack.count() - 1:
+                # Wir sind auf der letzten Seite und haben geklickt -> START
+                self.start_simulation()
+                return
+
+            # 3. Seite wechseln
+            if current_index < self.stack.count() - 1:
+                self.stack.setCurrentIndex(current_index + 1)
+                self.update_buttons()
+
+    def go_back(self):
+            current_index = self.stack.currentIndex()
+            if current_index > 0:
+                self.stack.setCurrentIndex(current_index - 1)
+                self.update_buttons()
+
+    def update_buttons(self):
+            idx = self.stack.currentIndex()
+            # Zurück-Button Logik
+            self.btn_back.setEnabled(idx > 0)
+            
+            # Weiter-Button Text Logik
+            if idx == self.stack.count() - 1:
+                self.btn_next.setText("Simulation starten")
+            else:
+                self.btn_next.setText("Weiter >")
 
     def start_simulation(self):
-        """Holt Daten aus der aktiven Maske und startet Berechnung"""
-        
-        # Welche Maske ist gerade aktiv?
-        current_widget = self.stack.currentWidget()
-        
-        # Fehlerbehandlung: z.B. ungültige Eingaben
-        try:
-            # Daten abfragen
-            params = current_widget.get_data()
-            print(f"Starte Simulation mit Parametern: {params}")
-            QMessageBox.information(self, "Info", "Berechnung gestartet... (siehe Konsole)")
-        except ValueError as e:
-            QMessageBox.warning(self, "Ungültige Eingabe", str(e))
-            return
-        
-        
-        # HINWEIS ZUR RECHENLEISTUNG: todo
-        # Wenn hier eine schwere Rechnung folgt, friert die GUI ein.
-        # Lösung: QThread.
-        # Vorerst nur Platzhalter:
+            print("--- FINALER START ---")
+            print("Alle gesammelten Daten:", self.simulation_data)
+            QMessageBox.information(self, "Erfolg                     ",
+                                          "Simulation wurde gestartet!")
+            # Hier rufst du dann deine core logic auf

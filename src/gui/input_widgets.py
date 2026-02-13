@@ -16,9 +16,15 @@ class EbN0InputWidget(QWidget):
         self.input_ebn0_max.setRange(-1, 30)
         self.input_ebn0_max.setValue(12)
         self.input_ebn0_max.setSuffix(" dB")
+
+        self.input_steps = QSpinBox()
+        self.input_steps.setRange(1, 1000)
+        self.input_steps.setSuffix(" Schritte")
+        self.input_steps.setValue(5)
         
         form_layout.addRow("min. Eb/N0:", self.input_ebn0_min)
         form_layout.addRow("max. Eb/N0:", self.input_ebn0_max)
+        form_layout.addRow("Simulationsauflösung:", self.input_steps)
         
         main_layout = QHBoxLayout()
         main_layout.addLayout(form_layout)
@@ -33,7 +39,8 @@ class EbN0InputWidget(QWidget):
         return {
             "mode": "ebn0",
             "ebn0_min": self.input_ebn0_min.value(),
-            "ebn0_max": self.input_ebn0_max.value()
+            "ebn0_max": self.input_ebn0_max.value(),
+            "steps": self.input_steps.value()
         }
 
 class PowerInputWidget(QWidget):
@@ -145,9 +152,15 @@ class DistanceInputWidget(QWidget):
         end_power_layout.addWidget(self.unit_selector)
         end_power_layout.addStretch()
 
+        self.input_steps = QSpinBox()
+        self.input_steps.setRange(1, 1000)
+        self.input_steps.setSuffix(" Schritte")
+        self.input_steps.setValue(5)
+
         form_layout.addRow("Distanz:", self.input_distance)
         form_layout.addRow("Minimale Leistung:", start_power_layout)
         form_layout.addRow("Maximale Leistung:", end_power_layout)
+        form_layout.addRow("Simulationsauflösung:", self.input_steps)
 
         main_layout = QHBoxLayout()
         main_layout.addLayout(form_layout)
@@ -171,6 +184,7 @@ class DistanceInputWidget(QWidget):
             "distance": self.input_distance.value(),
             "start_power": convert_to_watt(self.input_start_power.value(), self.unit_selector.currentText()),
             "end_power": convert_to_watt(self.input_end_power.value(), self.unit_selector.currentText()),
+            "steps": self.input_steps.value()
         }
 
 def convert_to_watt(value, unit):
