@@ -12,6 +12,8 @@ from gui.pages.p4_scinti import ScintillationPage
 from gui.pages.p5_background import BackgroundPage
 from gui.pages.p6_summary import SummaryPage
 
+from core.fso_channel import calculate_geometric_and_pointing_loss
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -77,7 +79,7 @@ class MainWindow(QMainWindow):
                     # Speichere die Daten im zentralen Dictionary unter dem Namen der Seite
                     # oder flach, je nach Geschmack. Hier: Update ins Haupt-Dict.
                     self.simulation_data.update(page_data)
-                    print(f"Aktuelle Daten: {self.simulation_data}") 
+                    print(f"Update calculation parameters: {self.simulation_data}") 
                 except ValueError as e:
                     QMessageBox.warning(self, "Fehler", str(e))
                     return # Nicht weitergehen bei Fehler!
@@ -87,7 +89,7 @@ class MainWindow(QMainWindow):
             if current_index + 1 == self.stack.count() - 1:
                 # Wir gehen jetzt zur Summary Page -> Daten übergeben!
                 self.page_summary.update_summary(self.simulation_data)
-                self.btn_next.setText("Simulation starten")
+                self.btn_next.setText("Berechnung starten")
             elif current_index == self.stack.count() - 1:
                 # Wir sind auf der letzten Seite und haben geklickt -> START
                 self.start_simulation()
@@ -111,13 +113,16 @@ class MainWindow(QMainWindow):
             
             # Weiter-Button Text Logik
             if idx == self.stack.count() - 1:
-                self.btn_next.setText("Simulation starten")
+                self.btn_next.setText("Berechnung starten")
             else:
                 self.btn_next.setText("Weiter >")
 
     def start_simulation(self):
-            print("--- FINALER START ---")
-            print("Alle gesammelten Daten:", self.simulation_data)
-            QMessageBox.information(self, "Erfolg                     ",
-                                          "Simulation wurde gestartet!")
-            # Hier rufst du dann deine core logic auf
+            print("--- START CALCULATION Eb/N0 ---")
+            print("All calculation parameters:", self.simulation_data)
+            QMessageBox.information(self, "Erfolg                    ",
+                                          "Berechung wurde gestartet!")
+            
+            if self.simulation_data.get("mode") == "distance":
+                print("Mode: ", self.simulation_data.get("mode"))
+                print("Distance: ", self.simulation_data.get("distance_km"))

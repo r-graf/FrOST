@@ -7,7 +7,7 @@ class ModePage(QWidget):
         super().__init__()
         layout = QVBoxLayout()
         
-        layout.addWidget(QLabel("<h2>Schritt 2: Berechnungsmethode</h2>"))
+        layout.addWidget(QLabel("<h2>Schritt 1: Berechnungsmethode</h2>"))
         
         # Dropdown
         self.mode_selector = QComboBox()

@@ -10,7 +10,7 @@ class GeometricPage(QWidget):
         layout = QVBoxLayout()
         
         # Überschrift
-        layout.addWidget(QLabel("<h2>Schritt 3: Geometrische Verluste</h2>"))
+        layout.addWidget(QLabel("<h2>Schritt 2: Geometrische Verluste</h2>"))
         layout.addWidget(QLabel("Bitte gib die Parameter für die geometrische Berechnung ein."))
         layout.addSpacing(20) # Etwas Abstand
 
@@ -66,8 +66,8 @@ class GeometricPage(QWidget):
     def get_data(self):
         """Gibt die Werte als Dictionary zurück"""
         return {
-            "theta": self.input_theta.value(),
-            "a": self.input_a.value(),
+            "theta_": self.input_theta.value(),
+            "a_m": self.input_a.value(),
             "jitter_sigma": self.input_jitter.value(),
             "n_samples": self.input_samples.value()
         }

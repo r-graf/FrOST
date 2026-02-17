@@ -8,7 +8,7 @@ class BackgroundPage(QWidget):
         layout = QVBoxLayout()
         
         # Überschrift
-        layout.addWidget(QLabel("<h2>Schritt 6: Hintergrundstrahlung</h2>"))
+        layout.addWidget(QLabel("<h2>Schritt 5: Hintergrundstrahlung</h2>"))
         layout.addWidget(QLabel("Parameter für das Umgebungslicht (Background Noise):"))
         layout.addSpacing(20)
 
@@ -51,10 +51,10 @@ class BackgroundPage(QWidget):
         self.input_sky = QComboBox()
         # Key-Value Paare: Was angezeigt wird vs. was wir speichern
         self.sky_options = {
-            "Klarer Tag (Sunny)": "sunny",
+            "Klarer Tag (Sunny)": "sunny_sky",
             "Bewölkt (Cloudy)": "cloudy",
             "Nacht (Night)": "night",
-            "Dämmerung (Twilight)": "twilight"
+            "Direktes Sonnenlicht (Worst Case)": "direct_sun"
         }
         self.input_sky.addItems(self.sky_options.keys())
         self.input_sky.setCurrentIndex(1) # Default: Bewölkt auswählen
@@ -78,9 +78,9 @@ class BackgroundPage(QWidget):
         sky_value = self.sky_options[current_text]
 
         return {
-            "fov_mrad": self.input_fov.value(),
-            "aperture_diameter_cm": self.input_aperture.value(),
-            "optical_filter_width_nm": self.input_filter.value(),
-            "electrical_bandwidth_Hz": self.input_bandwidth.value(),
-            "sky_condition": sky_value
+            "bckgrnd_fov_mrad": self.input_fov.value(),
+            "bckgrnd_aperture_diameter_cm": self.input_aperture.value(),
+            "bckgrnd_filter_width_nm": self.input_filter.value(),
+            "bckgrnd_electrical_bandwidth_Hz": self.input_bandwidth.value(),
+            "bckgrnd_sky_condition": sky_value
         }

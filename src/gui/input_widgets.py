@@ -113,10 +113,10 @@ class PowerInputWidget(QWidget):
 
         return {
             "mode": "power",
-            "p_tx": convert_to_watt(raw_value, unit),
-            "min_dist": self.input_distance_min.value(),
-            "max_dist": self.input_distance_max.value(),
-            "steps": self.input_steps.value()
+            "geo_p_tx_W": convert_to_watt(raw_value, unit),
+            "geo_min_dist_km": self.input_distance_min.value(),
+            "geo_max_dist_km": self.input_distance_max.value(),
+            "geo_steps": self.input_steps.value()
         }
 
 class DistanceInputWidget(QWidget):
@@ -181,9 +181,9 @@ class DistanceInputWidget(QWidget):
 
         return {
             "mode": "distance",
-            "distance": self.input_distance.value(),
-            "start_power": convert_to_watt(self.input_start_power.value(), self.unit_selector.currentText()),
-            "end_power": convert_to_watt(self.input_end_power.value(), self.unit_selector.currentText()),
+            "distance_km": self.input_distance.value(),
+            "start_power_W": convert_to_watt(self.input_start_power.value(), self.unit_selector.currentText()),
+            "end_power_W": convert_to_watt(self.input_end_power.value(), self.unit_selector.currentText()),
             "steps": self.input_steps.value()
         }
 

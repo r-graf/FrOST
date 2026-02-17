@@ -40,9 +40,10 @@ Return:
 - 'steps': 5
 
 ## Modell
+Verifikation via Literatur
 
-Skript in core/fso_channel.py schreiben.
-Modell gibt es schon in gui/components.py
+### Done
+Skript in core/fso_channel.py schreiben
 
 ## Aufräumen
 
@@ -50,3 +51,6 @@ doc/graphics/Block-Diagram-DSP-Chain.svg
 src/core/osc_sim.py
 src/gui/components.py
 toDo.md
+
+## GIT
+Umbenennen in "FROST"

@@ -32,15 +32,14 @@ class ScintillationPage(QWidget):
         self.input_L.setValue(20000.0)        # Standard: 20 km (Atmosphärendicke)
         self.input_L.setMaximumWidth(200)
 
-        # 3. Wavelength (in Metern!)
-        # Achtung: User wollte hier explizit Meter, nicht nm.
+        # 3. Wavelength (nm)
         self.input_wavelength = QDoubleSpinBox()
-        self.input_wavelength.setDecimals(10) # Damit 1550nm (0.000001550) reinpasst
-        self.input_wavelength.setRange(0, 1e-3)
-        self.input_wavelength.setSuffix(" m")
-        self.input_wavelength.setValue(1550e-9) # 1550 nm in m
-        self.input_wavelength.setSingleStep(1e-9)
-        self.input_wavelength.setMaximumWidth(200)
+        self.input_wavelength.setDecimals(1)
+        self.input_wavelength.setRange(100, 10000) # UV bis IR
+        self.input_wavelength.setSuffix(" nm")
+        self.input_wavelength.setValue(1550)
+        self.input_wavelength.setSingleStep(10)
+        self.input_wavelength.setMaximumWidth(150)
 
         # Formular befüllen
         form.addRow("Cn² (Strukturparameter):", self.input_cn2)
@@ -56,5 +55,5 @@ class ScintillationPage(QWidget):
         return {
             "scinti_cn2": self.input_cn2.value(),
             "scinti_L_m": self.input_L.value(),
-            "scinti_wavelength_m": self.input_wavelength.value()
+            "scinti_wavelength_nm": self.input_wavelength.value()
         }

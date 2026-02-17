@@ -8,7 +8,7 @@ class AtmospherePage(QWidget):
         layout = QVBoxLayout()
         
         # Überschrift
-        layout.addWidget(QLabel("<h2>Schritt 4: Atmosphärische Verluste</h2>"))
+        layout.addWidget(QLabel("<h2>Schritt 3: Atmosphärische Verluste</h2>"))
         layout.addWidget(QLabel("Bitte gib die Parameter für die atmosphärische Dämpfung ein."))
         layout.addSpacing(20)
 
