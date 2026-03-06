@@ -12,7 +12,9 @@ from gui.pages.p4_scinti import ScintillationPage
 from gui.pages.p5_background import BackgroundPage
 from gui.pages.p6_summary import SummaryPage
 
-from core.fso_channel import calculate_geometric_and_pointing_loss
+# Importiere die Modefunktionen
+from core.modes.mode_ebn0 import mode_ebn0
+from core.modes.mode_distance import mode_distance
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -124,5 +126,7 @@ class MainWindow(QMainWindow):
                                           "Berechung wurde gestartet!")
             
             if self.simulation_data.get("mode") == "distance":
-                print("Mode: ", self.simulation_data.get("mode"))
-                print("Distance: ", self.simulation_data.get("distance_km"))
+                mode_distance(self.simulation_data)
+
+            if self.simulation_data.get("mode") == "ebn0":
+                mode_ebn0(self.simulation_data)
