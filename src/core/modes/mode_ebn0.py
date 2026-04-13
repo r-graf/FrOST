@@ -15,6 +15,6 @@ def mode_ebn0(data: dict):
     ebn0_max = data.get("ebn0_max")
     ebn0_step = data.get("steps")
 
-    # Berechne die Bitfehlerrate (BER) für ein BPSK-Signal
+    # Debug Output, x-Achse der Simulation
     print("Start Eb/N0: ", ebn0_min, "dB bis", ebn0_max, "dB in", ebn0_step, "Schritten")
     return {}

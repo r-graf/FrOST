@@ -40,6 +40,8 @@ Return:
 - 'steps': 5
 
 ## Modell
+
+### to Do
 Verifikation via Literatur
 
 ### Done
@@ -54,3 +56,80 @@ toDo.md
 
 ## GIT
 Umbenennen in "FROST"
+
+# Struktur der Parameter Abfrage in der GUI
+
+## Abfrage der Modi
+- Fixe Distanz
+- Fixe Leistung
+- Über eine definierte Range von normierter Leistung (Eb/N0)
+
+## 1. Schritt: Abfrage der Parameter des optischen Kommunikationsterminals (OCT)
+Allgemeine Parameter Laser
+
+[NEU] Mögliche Stahlungsleistung
+Eingabe der allgemeinen Parameter
+Divergenzwinkel
+Radius am Empfangsaperatur
+Durchmesser Sender
+Durchmesser Empfänger
+Wellenlänge
+Bandbreite des optischen Bandpassfilter
+Elektrische Bandbreite der Datenübertragung
+Jitter optische Bodenstation (OGS) oder Platform
+Sichtfeld (FOV) für das Hintergrundstrahlen auf den Empfänger
+
+## 2. Schritt
+
+Allgemeine Parameter Kanal
+Wetterbedingungen
+- Visibility
+- Sky condition (clear, cloudy, night, ...)
+Cn2
+Mögliche Distanz, als einzelnen Punkt oder als Range
+
+## 3. Simulationsparameter
+Simulationsauflösung in der Berechung des Eb/N0
+Anzahl der Stichproben (Samples) der Montecarlosimulation in der Berechung der geometrischen Verluste
+
+# Abruf der Simulation nach Modi Selektion
+
+Erzeugen des Tensors, welcher als Basis für die Berechung der BER im FSO Channel Skript verwendet werden soll.
+Dieser soll wie eine Tabelle aufgebaut werden.
+Für die jeweiligen Einträge über die Parameterabfrage sollen korrenspodierende Werte berechnet werden.
+Ein Entwurf für die Instanziierung wird unterhalb wie folgt definiert:
+
+'Simulation_Range'
+|Name|Notiz|
+|-|-|
+| EbN0 | Eingangsparameter für FSO Channel Skript |
+| power | Sendeleistung des Lasers |
+| disntance | Link Distanz |
+
+## Berechung nach Eb/N0
+
+Argumente:
+- min. Eb/N0 [dB]
+- max. Eb/N0 [dB]
+- Simulationsauflösung [1]
+- Simluation Range [tf]
+Return:
+- Tensorflow Array -> Update von Simluation Range [tf]
+
+### Funktion
+Die X-Achse wird wie folgt definiert.
+Nur das Eb/N0 spielt eine Rolle.
+Keine Abfrage weiterer Parameter ist 
+
+## Berechung über die Leistung
+Argumente:
+- Sendeleistung [W]
+- min. Distanz [km]
+- max. Distanz [km]
+- Simulationsauflösung [1]
+- Simluation Range [tf]
+Return:
+- Tensorflow Array -> Update von Simluation Range [tf]
+
+## Berechnung über Distanz
+Argumente:
