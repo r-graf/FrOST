@@ -1,7 +1,16 @@
 import os
 import sys
 
+import yaml
 import osc_def
+from pathlib import Path
+
+config_path = Path(__file__).parent / "config.yaml"
+
+print(f"Suche Config unter: {config_path}") # Kleine Hilfe fürs Debugging
+
+with open(config_path, "r") as f:
+    config = yaml.safe_load(f)
 
 if os.getenv("CUDA_VISIBLE_DEVICES") is None:
     gpu_num = 0 # Use "" to use the CPU
@@ -46,7 +55,7 @@ num_bits_per_symbol = 1 # OOK
 b = osc_def.bitstream(k, n, batch=1000)
 
 # Simulation
-results = osc_def.OpticalSatcomChain(b, "bpsk", ebn0_min=-1, ebn0_max=12, simsteps=27, ldpc=True)
+results = osc_def.OpticalSatcomChain(b, config, "bpsk", ebn0_min=-1, ebn0_max=12, simsteps=27, ldpc=False, RS=False)
 #osc_sim.OpticalSatcomChain(b, "o3k")
 #print("\nSimulation result vector: \n",results)
 print("\n\nEND SIMULATION")

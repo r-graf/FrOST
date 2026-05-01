@@ -19,18 +19,100 @@ except ImportError as e:
 
 # IPython "magic function" for inline plots
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import tensorflow as tf
 import numpy as np
 import math as math
 import reedsolo as rs
+from scipy.special import erf
 
 print("\n--------------------------------------\n")
 print("BEGIN TOOL")
 
-def OpticalSatcomChain(bitstream, modulation="o3k", uncoded=True, ldpc=True, graphic=True, n=16384 ,k=8192, RS = True, ebn0_min=0., ebn0_max=12., simsteps=12):
+def get_fso_link_offset(config):
+    """
+    Berechnet den Offset zwischen Eb/N0 (dB) und der Sendeleistung P_tx (dBm).
+    Basierend auf den physikalischen Parametern aus deinem Test-Skript.
+    """
+    # --- Parameter (Diese könntest du später auch als Argumente übergeben) ---
+    # L_km = 2.0
+    # visibility_km = 4.0
+    # wavelength_nm = 1550.0
+    # rx_aperture_cm = 10.0
+    # theta_mrad = 1.5
+    # R_resp = 0.9          # Responsivity
+    # data_rate = 1e9       # 1 Gbps
+    # T_kelvin = 300
+    # R_load = 50
+    # kB = 1.38e-23
+    # q_charge = 1.602e-19
+
+    lp = config['link_params']
+    L_km = lp['L_km']
+    visibility_km = lp['visibility_km']
+    wavelength_nm = lp['wavelength_nm']
+    theta_mrad = lp['theta_mrad']
+
+    rp = config['receiver_params']
+    rx_aperture_cm = rp['rx_aperture_cm']
+    R_resp = rp['R_resp']
+    data_rate = rp['data_rate']
+    T_kelvin = rp['T_kelvin']
+    R_load = rp['R_load']
+
+    c = config['constants']
+    kB = c['kB']
+    q_charge = c['q_charge']
+
+    # 1. Geometrische Verluste
+    w_L = (theta_mrad / 2000.0) * (L_km * 1000)
+    rx_radius_m = (rx_aperture_cm / 100.0) / 2.0
+    v = (np.sqrt(np.pi) * rx_radius_m) / (np.sqrt(2) * w_L)
+    h_geo = erf(v)**2
+
+    # 2. Atmosphärische Verluste (Kim Modell)
+    q = 0.585 * (visibility_km**(1/3)) if visibility_km <= 6 else 1.3
+    sigma_atm = (3.91 / visibility_km) * ((wavelength_nm / 550.0)**(-q))
+    h_atm = np.exp(-sigma_atm * L_km)
+
+    # 3. Rauschen (Thermal Noise Dominant)
+    # Wir nehmen an, dass das Rauschen konstant ist (Worst Case für den Offset)
+    sigma_sq_thermal = (4 * kB * T_kelvin * data_rate) / R_load
+    
+    # 4. Der "Brückenschlag"
+    # P_rx = P_tx * h_geo * h_atm
+    # I_sig = P_rx * R_resp
+    # SNR = (I_sig^2) / sigma_sq_total
+    # Wir setzen P_tx = 1W (30 dBm) als Referenz und schauen, welches Eb/N0 dabei rauskommt.
+    p_tx_ref_dbm = 30.0
+    p_tx_ref_w = 1.0
+    p_rx = p_tx_ref_w * h_geo * h_atm
+    i_sig = p_rx * R_resp
+    snr_lin = (i_sig**2) / sigma_sq_thermal
+    ebn0_db_ref = 10 * np.log10(snr_lin) # Bei OOK/BPSK (1 Bit/Symbol) ist EbN0 approx SNR
+
+    # Offset: P_tx_dBm = EbN0_dB + Offset
+    offset = p_tx_ref_dbm - ebn0_db_ref
+    print("\n--- LINK BUDGET VERIFIKATION ---")
+    print(f"Linklänge:               {L_km} km")
+    print(f"Visibilität:             {visibility_km} km")
+    print(f"Divergenzwinkel:         {theta_mrad} mrad")
+    print(f"Geometrischer Verlust:   {10 * np.log10(h_geo):.2f} dB")
+    print(f"Atmosphärischer Verlust: {10 * np.log10(h_atm):.2f} dB")
+    print(f"Totaler Kanal-Verlust:   {10 * np.log10(h_geo * h_atm):.2f} dB")
+    print(f"Thermische Rauschleistung: {sigma_sq_thermal:.2e} A^2")
+    print(f"Signalstrom bei 30 dBm:    {i_sig:.2e} A")
+    print(f"Resultierendes Eb/N0:    {ebn0_db_ref:.2f} dB")
+    print("--------------------------------\n")
+    return offset
+
+def OpticalSatcomChain(bitstream, config, modulation="o3k", uncoded=True, ldpc=True, graphic=True, n=16384 ,k=8192, RS = True, ebn0_min=0., ebn0_max=12., simsteps=12):
     
     b = bitstream
     print("Bitstream:", b)
+
+    if graphic == True:
+        fig, ax1 = plt.subplots(figsize=(10, 6))
 
     ###############
     ### UNCODED ###
@@ -49,7 +131,7 @@ def OpticalSatcomChain(bitstream, modulation="o3k", uncoded=True, ldpc=True, gra
     mapper = sionna.phy.mapping.Mapper(constellation=constellation)
     modulated_bitstream = mapper(bitstream)
     #print("modulated_fec_bitstream:", modulated_bitstream)
-    # PLACEHOLDER FSO CHANNEL FROM TIME SERIES
+    # PLACEHOLDER FSO CHANNEL FROM TIME SERIES ULTRAAIR
 
     awgn = sionna.phy.channel.AWGN()
     
@@ -92,8 +174,9 @@ def OpticalSatcomChain(bitstream, modulation="o3k", uncoded=True, ldpc=True, gra
             print("Math.     BER  = ", theoretical_ber)
             print("uncoded:  BER  = ", ber_uncoded[snr])
 
-        plt.plot(EbNo_dB_range, ber_uncoded, 'g', label="uncoded")
-        plt.plot(EbNo_dB_range, ber_math, 'rx', label="Theory")
+        if graphic == True:
+            ax1.plot(EbNo_dB_range, ber_uncoded, 'g', label="Uncoded")
+            ax1.plot(EbNo_dB_range, ber_math, 'rx', label="Theoretical Uncoded")
 
     ##############
     ###  LDPC  ###
@@ -151,7 +234,9 @@ def OpticalSatcomChain(bitstream, modulation="o3k", uncoded=True, ldpc=True, gra
             if sionna_ber == 0:
                 ber_ldpc.extend([sionna_ber.numpy()] * (itr - snr - 1))
                 break
-        plt.plot(EbNo_dB_range, ber_ldpc, 'b-s', label="LDPC")
+        
+        if graphic == True:
+            ax1.plot(EbNo_dB_range, ber_ldpc, 'b-s', label="LDPC")
 
     ###################
     ### RS(255,223) ###
@@ -211,28 +296,40 @@ def OpticalSatcomChain(bitstream, modulation="o3k", uncoded=True, ldpc=True, gra
                 ber_rs.extend([ber_rs[snr]] * (itr - snr - 1))
                 break
 
-        plt.plot(EbNo_dB_range, ber_rs, 'm-.', label="RS(255,223)")
+        if graphic == True:
+            ax1.plot(EbNo_dB_range, ber_rs, 'm-.', label="RS(255,223)")
 
     results = list(zip(EbNo_dB_range, ber_math, ber_uncoded))
 
     if graphic == True:
+        ax1.set_xlim([ebn0_min, ebn0_max])
+        ax1.set_yscale('log')
+        ax1.set_xlabel('Eb/N0 (dB)')
+        ax1.set_ylabel('BER')
+        ax1.grid(True, which="both", ls="-", color='0.85') # Macht das Grid schöner
         
-        plt.xscale('linear')
-        plt.yscale('log')
-        plt.xlabel('EbNo(dB)')
-        plt.ylabel('BER')
-        plt.grid(True)
         if modulation == "o3k":
-            plt.title('O3K Modulation')
+            ax1.set_title('O3K Modulation Performance')
         elif modulation == "bpsk":
-            plt.title('BPSK Modulation')
-        plt.legend()
+            ax1.set_title('BPSK Modulation Performance')
+            
+        ax1.legend()
+
+        # Obere Achse (Sendeleistung) berechnen und anfügen
+        offset = get_fso_link_offset(config)
+        distance = config['link_params']['L_km']
+        ax2 = ax1.twiny()
+        ax2.set_xlim([ebn0_min + offset, ebn0_max + offset])
+        ax2.set_xlabel(f'Benötigte Sendeleistung $P_{{tx}}$ (dBm) bei L={distance}km, Visibility={config["link_params"]["visibility_km"]}km und Divergenzwinkel={config["link_params"]["theta_mrad"]}mrad', color='tab:blue')
+        ax2.tick_params(axis='x', colors='tab:blue')
+
+        ax2.xaxis.set_major_locator(ticker.MultipleLocator(2))
+        ax2.xaxis.set_minor_locator(ticker.MultipleLocator(1))
+
+        plt.tight_layout()
         plt.show()
 
     return results
-
-
-
 
 def bitstream(k, n, batch=150, num_bits_per_symbol=1):
     # Generating input bitstream

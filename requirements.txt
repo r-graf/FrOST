@@ -7,3 +7,4 @@ math
 redsolo
 numpy
 scipy
+pyyaml

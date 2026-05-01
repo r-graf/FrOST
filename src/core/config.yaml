@@ -1,0 +1,17 @@
+# FrOST Configuration File
+link_params:
+  L_km: 5.0
+  visibility_km: 3.0
+  wavelength_nm: 1550.0
+  theta_mrad: 1.5
+
+receiver_params:
+  rx_aperture_cm: 10.0
+  R_resp: 0.9
+  data_rate: 1.0e+9
+  T_kelvin: 300
+  R_load: 50
+
+constants:
+  kB: 1.38e-23
+  q_charge: 1.602e-19
