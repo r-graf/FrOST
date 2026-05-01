@@ -1,10 +1,7 @@
-PySide6
-Shionna
-Matplotlib
-PyQt6
+sionna
+matplotlib
 tensorflow
-math
-redsolo
+reedsolo
 numpy
 scipy
 pyyaml
