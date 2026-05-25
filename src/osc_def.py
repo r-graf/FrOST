@@ -26,15 +26,14 @@ import math as math
 import reedsolo as rs
 from scipy.special import erf
 
-print("\n--------------------------------------\n")
-print("BEGIN TOOL")
+#print("\n--------------------------------------\n")
+#print("BEGIN TOOL")
 
 def get_fso_link_offset(config):
     """
     Berechnet den Offset zwischen Eb/N0 (dB) und der Sendeleistung P_tx (dBm).
     Basierend auf den physikalischen Parametern aus deinem Test-Skript.
     """
-    # --- Parameter (Diese könntest du später auch als Argumente übergeben) ---
     # L_km = 2.0
     # visibility_km = 4.0
     # wavelength_nm = 1550.0
@@ -76,10 +75,10 @@ def get_fso_link_offset(config):
     h_atm = np.exp(-sigma_atm * L_km)
 
     # 3. Rauschen (Thermal Noise Dominant)
-    # Wir nehmen an, dass das Rauschen konstant ist (Worst Case für den Offset)
+    # Ann.: Rauschen konstant (Worst Case für den Offset)
     sigma_sq_thermal = (4 * kB * T_kelvin * data_rate) / R_load
     
-    # 4. Der "Brückenschlag"
+    # 4. Empfangs-/Sendeleistung und Signalstrom
     # P_rx = P_tx * h_geo * h_atm
     # I_sig = P_rx * R_resp
     # SNR = (I_sig^2) / sigma_sq_total
@@ -109,7 +108,7 @@ def get_fso_link_offset(config):
 def OpticalSatcomChain(bitstream, config, modulation="o3k", uncoded=True, ldpc=True, graphic=True, n=16384 ,k=8192, RS = True, ebn0_min=0., ebn0_max=12., simsteps=12):
     
     b = bitstream
-    print("Bitstream:", b)
+    #print("Bitstream:", b)
 
     if graphic == True:
         fig, ax1 = plt.subplots(figsize=(10, 6))
